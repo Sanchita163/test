@@ -5,112 +5,102 @@
  * This is a custom page template for displaying a list of all the "Books" posts.
  */
 
-get_header();
-// Enqueue Swiper CSS and JS files
+get_header(); ?>
 
-wp_enqueue_style( 'swiper-style', 'https://unpkg.com/swiper/swiper-bundle.min.css' );
-wp_enqueue_script( 'swiper-script', 'https://unpkg.com/swiper/swiper-bundle.min.js', array( 'jquery' ), '', true );
+<header class="navbar navbar-expand-lg navbar-light" style="background-color: #000;">
+  <div class="container" style="background">
+    <a class="navbar-brand mx-auto" href="#">
+      <img src="http://localhost/Book/wp-content/uploads/2023/05/headerLogo.png" alt="Logo" heaight="300px;" width="500px;" >
+    </a>
+  </div>
+</header>
 
-?>
 
-<style>
-.book-slider {
-  margin: 20px auto;
-  width: 100%;
-}
-
-.book-slider .swiper-slide {
-  display: flex;
-  justify-content: center;
-}
-
-.book-item {
-  margin: 0 10px;
-  text-align: center;
-}
-
-.book-item img {
-  max-width: 100%;
-  height: auto;
-}
-
-</style>
 
 <?php
-
 // Get all "Books" posts
 $args = array(
     'post_type' => 'book',
     'posts_per_page' => -1,
 );
-$books = new WP_Query( $args );
+$books = new WP_Query($args);
 
+?>
 
-// Display the book slider with three books per slide
-if ( $books->have_posts() ) :
-    ?>
-    <div class="book-slider">
-        <div class="swiper-wrapper">
-            <?php 
-            while ( $books->have_posts() ) : $books->the_post();
-                $cover_image = get_field( 'cover_image' ); 
-                if ( $cover_image ) : ?>
-                    <div class="swiper-slide">
-                        <div class="book-item" style="width:300;height:600;">
+<style>
+    .carousel-item {
+        height: 500px;
+        overflow: hidden;
+    }
+    
+    .carousel-item img {
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .carousel-item:hover img {
+        transform: scale(1.1);
+    }
+
+    @media (max-width: 768px) {
+        .carousel-item {
+            height: 300px;
+        }
+    }
+</style>
+
+<?php if ($books->have_posts()) : ?>
+    <div id="book-carousel" class="carousel slide" data-ride="carousel">
+        <ol class="carousel-indicators">
+            <?php for ($i = 0; $i < $books->post_count; $i++) : ?>
+                <li data-target="#book-carousel" data-slide-to="<?php echo $i; ?>" <?php echo $i === 0 ? 'class="active"' : ''; ?>></li>
+            <?php endfor; ?>
+        </ol>
+        <div class="carousel-inner">
+            <?php
+            $counter = 0;
+            $col_width = 4; // number of items to show per slide
+            while ($books->have_posts()) : $books->the_post();
+                $cover_image = get_field('cover_image');
+                if ($cover_image) : ?>
+                    <?php if ($counter % $col_width === 0) : ?>
+                        <div class="carousel-item <?php echo $counter === 0 ? 'active' : ''; ?>">
+                            <div class="row">
+                    <?php endif; ?>
+                    <div class="col-lg-<?php echo 12 / $col_width; ?>">
+                        <div class="book-item">
                             <a href="<?php the_permalink(); ?>">
-                                <img src="<?php echo esc_url( $cover_image['url'] ); ?>" alt="<?php echo esc_attr( $cover_image['alt'] ); ?>" width="300" height="600">
+                                <img src="<?php echo esc_url($cover_image['url']); ?>" alt="<?php echo esc_attr($cover_image['alt']); ?>" class="img-fluid">
                             </a>
                             <h4><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h4>
                         </div>
                     </div>
-                <?php endif; 
+                    <?php if (($counter + 1) % $col_width === 0 || $counter === $books->post_count - 1) : ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    <?php
+                    $counter++;
+                endif;
             endwhile; ?>
         </div>
-        <div class="swiper-button-prev"></div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-pagination"></div>
+        <a class="carousel-control-prev" href="#book-carousel" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#book-carousel" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
     </div>
-    <script>
-        jQuery(document).ready(function($) {
-            var swiper = new Swiper('.book-slider', {
-                slidesPerView: 3,
-                spaceBetween: 30,
-                loop: true,
-                autoplay: {
-                    delay: 5000,
-                    disableOnInteraction: false,
-                },
-                navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
-                },
-                pagination: {
-                    el: '.swiper-pagination',
-                    clickable: true,
-                },
-                breakpoints: {
-                    992: {
-                        slidesPerView: 2,
-                        spaceBetween: 20,
-                    },
-                    768: {
-                        slidesPerView: 1,
-                        spaceBetween: 10,
-                    }
-                }
-            });
-        });
-    </script>
-
 <?php endif;
 
-
-
 // Reset the post data
-wp_reset_postdata();
+wp_reset_postdata(); ?>
 
-// Display the list of "Books" posts
-?>
+
 <div class="container py-5">
     <h1 class="mb-4"><?php the_title(); ?></h1>
     <div class="row">
@@ -148,6 +138,4 @@ wp_reset_postdata();
 <?php
 get_footer();
 
-
-
-
+?>
